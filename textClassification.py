@@ -211,7 +211,6 @@ def filterResults(data, verdict):
 	
 
 def feedData(data):
-	print 'feedData'
 	demScore = 0
 	repScore = 0
 	threshold = 0.3
@@ -259,13 +258,36 @@ def feedData(data):
 
 
 	if repScore > demScore:
-		final = filterResults(verdict, 'Republican')
+		filtered = filterResults(verdict, 'Republican')
+		final = scrubFinalData(filtered)
 		return final 
 	if demScore > repScore:
-		final = filterResults(verdict, 'Democratic')
+		filtered = filterResults(verdict, 'Democratic')
+		final = scrubFinalData(filtered)
 		return final 
 	else:
 		return 'Not determined'
+
+def mapBias(bias):
+	val = abs(bias)
+	if val < 0.3:
+		return 'week'
+	elif val > 0.3 < 0.5:
+		return 'moderate'
+	elif val > 0.5 < 0.75:
+		return 'heavy'
+	elif val > 0.75:
+		return 'extreme'
+
+def scrubFinalData(data):
+	finalArr = []
+	for entry in data:
+		try:
+			tmpDict = {'sentence': entry[0], 'bias': mapBias(entry[1]), 'affiliation': entry[2]}
+		except:
+			tmpDict = {'verdict': entry[1]}
+		finalArr.append(tmpDict)
+	return finalArr
 
 
 
@@ -307,12 +329,12 @@ With President Obama on the ropes, Republicans have a huge opportunity right now
  """
 
 
-print requests.post('http://text-processing.com/api/sentiment/', data = "text=" + text).json()
-blob = TextBlob(text)
+# print requests.post('http://text-processing.com/api/sentiment/', data = "text=" + text).json()
+# blob = TextBlob(text)
 
-print classifySubjectSentiment(text, 'subject')
-for sentence in blob.sentences:
-    print(sentence.sentiment.polarity)
+# print classifySubjectSentiment(text, 'subject')
+# for sentence in blob.sentences:
+#     print(sentence.sentiment.polarity)
 
 
 
