@@ -216,7 +216,19 @@ def feedData(data):
 	verdict = []
 
 	for sentence , terms, topics , title, titleTerms in data:
+
 		if len(terms) == 1:
+
+			if len(topics) > 0:
+				topicClassification =  classifyTopic(sentence, topics.pop())
+				if topicClassification[0][0] == 2:
+					tmpTup   = (sentence, topicClassification[0][1], 'Republican')
+					verdict.append(tmpTup)
+				elif topicClassification[0][0] == 1:
+					tmpTup   = (sentence, topicClassification[0][1], 'Democratic')
+					verdict.append(tmpTup)
+
+
 			results = classifySubjectSentiment(sentence, terms[0][1])
 			if terms[0][1] == 'Democratic' and abs(results[1]['compound']) > threshold:
 				demScore += results[0]['compound']
@@ -227,15 +239,6 @@ def feedData(data):
 				tmpTup = (sentence, repScore, 'Republican')
 				verdict.append(tmpTup)
 
-	if len(topics) > 0:
-			print 'CLASSYFYING TOPICS'
-			topicClassification =  classifyTopic(sentence, topics.pop())
-			if topicClassification[0][0] == 2:
-				tmpTup   = (sentence, topicClassification[0][1], 'Republican')
-				verdict.append(tmpTup)
-			elif topicClassification[0][0] == 1:
-				tmpTup   = (sentence, topicClassification[0][1], 'Democratic')
-				verdict.append(tmpTup)
 
 	if len(titleTerms) ==  1:
 		titleClassification = classifySubjectSentiment(title, titleTerms)
