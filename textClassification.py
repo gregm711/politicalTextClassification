@@ -216,11 +216,11 @@ def feedData(data):
 				print results, sentence , topic
 				verdict.append(tmpTup)
 	if repScore > demScore:
-		print verdict
+		return verdict
 		# final = filterResults(verdict, 'Republican')
 		# return final 
 	else:
-		print verdict
+		return verdict
 		# final = filterResults(verdict, 'Democratic')
 		# return final 
 
