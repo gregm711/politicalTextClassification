@@ -191,9 +191,23 @@ def extractSubject(text):
 # print extractSubject(sentence)
 
 
-# def filterResults(data, verdict):
-# 	print data
-# 	if verdict == 'Republic':
+def filterResults(data, verdict):
+	final = []
+	for (sentence, score, party) in data:
+		if verdict == 'Republican':
+			if score > 0 and party == 'Republican' or score <  0 and party == 'Democratic':
+				tmpTup = (sentence, score, party)
+				final.append(tmpTup)
+		if verdict == 'Democratic':
+			if score > 0 and party == 'Democratic' or score < 0 and party == 'Republican':
+				tmpTup = (sentence, score, party)
+				final.append(tmpTup)
+	tmpTup = ('verdict', verdict)
+	final.append(tmpTup)
+	return final
+
+		
+
 
 
 
@@ -207,22 +221,18 @@ def feedData(data):
 			results = classifySubjectSentiment(sentence, topic[0][1])
 			if topic[0][1] == 'Democratic' and abs(results[1]['compound']) > threshold:
 				demScore += results[0]['compound']
-				tmpTup = (sentence, demScore)
-				print results, sentence , topic
+				tmpTup = (sentence, demScore, 'Democratic')
 				verdict.append(tmpTup)
 			elif topic[0][1] == 'Republican' and abs(results[1]['compound']) > threshold:
 				repScore += results[0]['compound']
-				tmpTup = (sentence, demScore)
-				print results, sentence , topic
+				tmpTup = (sentence, repScore, 'Republican')
 				verdict.append(tmpTup)
 	if repScore > demScore:
-		return verdict
-		# final = filterResults(verdict, 'Republican')
-		# return final 
+		final = filterResults(verdict, 'Republican')
+		return final 
 	else:
-		return verdict
-		# final = filterResults(verdict, 'Democratic')
-		# return final 
+		final = filterResults(verdict, 'Democratic')
+		return final 
 
 
 

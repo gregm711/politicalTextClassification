@@ -52,7 +52,7 @@ def getData(source):
 	# print results
 	
 
-print getData('fox')
+getData('fox')
 
 
 
