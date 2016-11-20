@@ -171,7 +171,7 @@ def classifyTopic(examples, topic):
 	noSentences    , noSentencesConfidence, finalText = topicClassifier(examples, topic, '')
 	maxVal = max(noSentencesConfidence[0][0], noSentencesConfidence[0][1])
 	if maxVal >= confidenceThreshold:
-		tmpTup = (noSentences[0], finalText[0], maxVal)
+		tmpTup = (noSentences[0], maxVal)
 		results.append(tmpTup)
 	return results
 
@@ -227,13 +227,22 @@ def feedData(data):
 				tmpTup = (sentence, repScore, 'Republican')
 				verdict.append(tmpTup)
 
+	if len(topics) > 0:
+			print 'CLASSYFYING TOPICS'
+			topicClassification =  classifyTopic(sentence, topics.pop())
+			if topicClassification[0][0] == 2:
+				tmpTup   = (sentence, topicClassification[0][1], 'Republican')
+				verdict.append(tmpTup)
+			elif topicClassification[0][0] == 1:
+				tmpTup   = (sentence, topicClassification[0][1], 'Democratic')
+				verdict.append(tmpTup)
+
 	if len(titleTerms) ==  1:
-		print 'CLASSYFING TITLE'
 		titleClassification = classifySubjectSentiment(title, titleTerms)
-		if titleClassification[2][1] == 'Democratic' and abs(titleClassification[1]['compound']) > threshold:
+		if titleClassification[2][0][1] == 'Democratic' and abs(titleClassification[1]['compound']) > threshold:
 			tmpTup = (title, titleClassification[1]['compound'], 'Democratic')
 			verdict.append(tmpTup)
-		elif titleClassification[2][1] == 'Republican' and abs(titleClassification[1]['compound']) > threshold:
+		elif titleClassification[2][0][1] == 'Republican' and abs(titleClassification[1]['compound']) > threshold:
 			tmpTup = (title, titleClassification[1]['compound'], 'Democratic')
 			verdict.append(tmpTup)
 	if repScore > demScore:
