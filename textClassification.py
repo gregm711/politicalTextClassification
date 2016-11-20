@@ -221,13 +221,13 @@ def feedData(data):
 
 			if len(topics) > 0:
 				topicClassification =  classifyTopic(sentence, topics.pop())
-				if topicClassification[0][0] == 2:
-					tmpTup   = (sentence, topicClassification[0][1], 'Republican')
-					verdict.append(tmpTup)
-				elif topicClassification[0][0] == 1:
-					tmpTup   = (sentence, topicClassification[0][1], 'Democratic')
-					verdict.append(tmpTup)
-
+				if topicClassification:
+					if topicClassification[0][0] == 2:
+						tmpTup   = (sentence, topicClassification[0][1], 'Republican')
+						verdict.append(tmpTup)
+					elif topicClassification[0][0] == 1:
+						tmpTup   = (sentence, topicClassification[0][1], 'Democratic')
+						verdict.append(tmpTup)
 
 			results = classifySubjectSentiment(sentence, terms[0][1])
 			if terms[0][1] == 'Democratic' and abs(results[1]['compound']) > threshold:
