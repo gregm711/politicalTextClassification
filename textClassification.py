@@ -157,6 +157,7 @@ def topicClassifier(text, topic, sentencesTag):
 	return prediction , confidence , finalText
 
 
+
 def classifyTopic(examples, topic):
 	confidenceThreshold = 0.6
 	usingSentences , sentencesConfidence , finalText = topicClassifier(examples, topic, 'sentences')
@@ -191,6 +192,7 @@ def extractSubject(text):
 # print extractSubject(sentence)
 
 
+
 def filterResults(data, verdict):
 	final = []
 	for (sentence, score, party) in data:
@@ -205,28 +207,35 @@ def filterResults(data, verdict):
 	tmpTup = ('verdict', verdict)
 	final.append(tmpTup)
 	return final
-
-		
-
-
-
+	
 
 def feedData(data):
 	demScore = 0
 	repScore = 0
-	threshold = 0.7
+	threshold = 0.5
 	verdict = []
-	for sentence , topic  in data:
-		if len(topic) == 1:
-			results = classifySubjectSentiment(sentence, topic[0][1])
-			if topic[0][1] == 'Democratic' and abs(results[1]['compound']) > threshold:
+
+	for sentence , terms, topics , title, titleTerms in data:
+		if len(terms) == 1:
+			results = classifySubjectSentiment(sentence, terms[0][1])
+			if terms[0][1] == 'Democratic' and abs(results[1]['compound']) > threshold:
 				demScore += results[0]['compound']
 				tmpTup = (sentence, demScore, 'Democratic')
 				verdict.append(tmpTup)
-			elif topic[0][1] == 'Republican' and abs(results[1]['compound']) > threshold:
+			elif terms[0][1] == 'Republican' and abs(results[1]['compound']) > threshold:
 				repScore += results[0]['compound']
 				tmpTup = (sentence, repScore, 'Republican')
 				verdict.append(tmpTup)
+
+	if len(titleTerms) ==  1:
+		print 'CLASSYFING TITLE'
+		titleClassification = classifySubjectSentiment(title, titleTerms)
+		if titleClassification[2][1] == 'Democratic' and abs(titleClassification[1]['compound']) > threshold:
+			tmpTup = (title, titleClassification[1]['compound'], 'Democratic')
+			verdict.append(tmpTup)
+		elif titleClassification[2][1] == 'Republican' and abs(titleClassification[1]['compound']) > threshold:
+			tmpTup = (title, titleClassification[1]['compound'], 'Democratic')
+			verdict.append(tmpTup)
 	if repScore > demScore:
 		final = filterResults(verdict, 'Republican')
 		return final 
@@ -236,24 +245,21 @@ def feedData(data):
 
 
 
+# def wordFeats(words):
+# 	return dict([(word, True) for word in words])
 
-
-
-def wordFeats(words):
-	return dict([(word, True) for word in words])
-
-def naiveBayes(words):
-	wordfeatures  = wordFeats(words)
-	classifierFile = open('semanticClassifier.pkl', 'r')
-	classifier = pickle.load(classifierFile)
-	return classifier.classify(wordfeatures)
-
+# def naiveBayes(words):
+# 	wordfeatures  = wordFeats(words)
+# 	classifierFile = open('semanticClassifier.pkl', 'r')
+# 	classifier = pickle.load(classifierFile)
+# 	return classifier.classify(wordfeatures)
 
 
 def newPolarity(polarity):
 	newPolarity = -1 * polarity['neg'] + polarity['pos'] 
 	polarity['newPolarity'] = newPolarity
 	return polarity
+
 
 
 

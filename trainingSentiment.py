@@ -13,14 +13,11 @@ def getData(source):
 	generator = iterData.getData(source)
 	while True:
 		data = next(generator)
-		print textClassification.feedData(data)
-		break
+		textClassification.feedData(data)
 		
 
 
-
-
-# def train(data):
+# def train(data):s
 # 	print data
 # 	articleDemScore = 0
 # 	articleRepScore = 0
