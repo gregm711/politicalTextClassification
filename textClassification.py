@@ -6,8 +6,9 @@ import csv
 import time
 import pandas as pd
 import numpy as np
+import requests
 import codecs
-import pickle
+import cPickle as pickle
 from sklearn.feature_extraction.text import CountVectorizer , TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from gensim import corpora  ,models, similarities
@@ -189,6 +190,63 @@ def extractSubject(text):
 # singles = [stemmer.stem(tok) for tok in tokens]
 # print extractSubject(sentence)
 
+
+# def filterResults(data, verdict):
+# 	print data
+# 	if verdict == 'Republic':
+
+
+
+def feedData(data):
+	demScore = 0
+	repScore = 0
+	threshold = 0.7
+	verdict = []
+	for sentence , topic  in data:
+		if len(topic) == 1:
+			results = classifySubjectSentiment(sentence, topic[0][1])
+			if topic[0][1] == 'Democratic' and abs(results[1]['compound']) > threshold:
+				demScore += results[0]['compound']
+				tmpTup = (sentence, demScore)
+				print results, sentence , topic
+				verdict.append(tmpTup)
+			elif topic[0][1] == 'Republican' and abs(results[1]['compound']) > threshold:
+				repScore += results[0]['compound']
+				tmpTup = (sentence, demScore)
+				print results, sentence , topic
+				verdict.append(tmpTup)
+	if repScore > demScore:
+		print verdict
+		# final = filterResults(verdict, 'Republican')
+		# return final 
+	else:
+		print verdict
+		# final = filterResults(verdict, 'Democratic')
+		# return final 
+
+
+
+
+
+
+def wordFeats(words):
+	return dict([(word, True) for word in words])
+
+def naiveBayes(words):
+	wordfeatures  = wordFeats(words)
+	classifierFile = open('semanticClassifier.pkl', 'r')
+	classifier = pickle.load(classifierFile)
+	return classifier.classify(wordfeatures)
+
+
+
+def newPolarity(polarity):
+	newPolarity = -1 * polarity['neg'] + polarity['pos'] 
+	polarity['newPolarity'] = newPolarity
+	return polarity
+
+
+
 def classifySubjectSentiment(sentence, subject):
 	tokens =  tokenize(sentence)
 	stemmer = PorterStemmer()
@@ -197,17 +255,30 @@ def classifySubjectSentiment(sentence, subject):
 	sid = SentimentIntensityAnalyzer()
 	tokenizedPolarity = sid.polarity_scores(newSent)
 	rawPolarity = sid.polarity_scores(sentence)
-	
+	finalRaw = newPolarity(rawPolarity)
+	finalTokenized  = newPolarity(tokenizedPolarity)
+	return finalRaw, finalTokenized , subject
 
-	return rawPolarity, tokenizedPolarity , subject
 
-# testSentences = ["BAIER: Mercedes, Hillary Clinton going after again and again and again temperament of Donald Trump"]
-# # sentence = """
 
-# # The news followed signs on Thursday that the weight of the presidency is beginning to sink in for Trump, and that the President-elect may be shifting from the bomb-throwing tactics he employed during the campaign to a more nuanced approach."""
 
-# # trump = ["Trump's remarks triggered a barrage of posts on Twitter, most of which were critical of the president-elect."]
-# for sentence in testSentences:
+
+
+# sentence = """Trump's remarks triggered a barrage of posts on Twitter, most of which were critical of the president-elect."""
+# tokens = tokenize(sentence)
+# print tokens
+# print naiveBayes(tokens)
+
+# print requests.post('http://text-processing.com/api/sentiment/', data = "text=Trump's remarks triggered a barrage of posts on Twitter, most of which were critical of the president-elect.").json()
+
+
+# testSentences = ["Dan, what about this tactic to go to the left of Hillary Clinton on her hawkishness, on the fact that she's trigger happy, the fact that you have a Republican nominee now saying that the Democrat is more likely to be engaged in countries around the world and we shouldn't be "]
+# # # sentence = """
+
+# # # The news followed signs on Thursday that the weight of the presidency is beginning to sink in for Trump, and that the President-elect may be shifting from the bomb-throwing tactics he employed during the campaign to a more nuanced approach."""
+
+# trump = ["Trump's remarks triggered a barrage of posts on Twitter, most of which were critical of the president-elect."]
+# for sentence in trump:
 # 	print classifySubjectSentiment(sentence, 'trump')
 
 

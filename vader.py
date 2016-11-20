@@ -129,6 +129,7 @@ def allcap_differential(words):
     return is_different
 
 
+
 def scalar_inc_dec(word, valence, is_cap_diff):
     """
     Check if the preceding words increase, decrease, or negate/nullify the
@@ -211,7 +212,7 @@ class SentimentIntensityAnalyzer(object):
             lex_dict[word] = float(measure)
         return lex_dict
 
-        
+
 
     def polarity_scores(self, text):
         """
