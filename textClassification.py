@@ -15,6 +15,12 @@ from gensim.parsing.preprocessing import STOPWORDS
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk.classify.util
 from nltk.stem.porter import *
+from gensim import corpora  ,models, similarities
+from gensim.utils import smart_open, simple_preprocess
+from gensim.parsing.preprocessing import STOPWORDS
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import nltk.classify.util
+from nltk.stem.porter import *
 
 """
 RESULTS:
@@ -169,13 +175,45 @@ def classifyTopic(examples, topic):
 	return results
 
 
+def classifySubjectSentiment(sentence, subject):
+	tokens =  tokenize(sentence)
+	stemmer = PorterStemmer()
+	singles = [stemmer.stem(tok) for tok in tokens]
+	newSent = ' '.join(map(str, tokens))
+	sid = SentimentIntensityAnalyzer()
+	tokenizedPolarity = sid.polarity_scores(newSent)
+	rawPolarity = sid.polarity_scores(sentence)
+	return rawPolarity, tokenizedPolarity
+# def classifySubjectSentiment(sentence, subject):
+# 	sid = SentimentIntensityAnalyzer()
+# 	polarity = sid.polarity_scores(sentence)
+# 	print polarity
+# 	return polarity
 
-examples = ['Science says it\'s not a baby.I beg to differ.Science said it is a baby.The baby has its own DNA and at nine weeks he has a heartbeat.A baby at twelve weeks is very']
+# testSentences = ["the movie was great.", "the movie was great!", "the movie sucked", "trump hates hillary", "amazing hillary thinks trump is an idiot"]
+sentence = """
+The news followed signs on Thursday that the weight of the presidency is beginning to sink in for Trump, and that the President-elect may be shifting from the bomb-throwing tactics he employed during the campaign to a more nuanced approach."""
 
-classifyTopic(examples, 'abortion')
+print classifySubjectSentiment(sentence, 'trump')
 
 
 
+"""
+Not tokenizing or stemming
+{'neg': 0.0, 'neu': 0.423, 'pos': 0.577, 'compound': 0.6249}
+{'neg': 0.0, 'neu': 0.406, 'pos': 0.594, 'compound': 0.6588}
+{'neg': 0.6, 'neu': 0.4, 'pos': 0.0, 'compound': -0.4588}
+{'neg': 0.592, 'neu': 0.408, 'pos': 0.0, 'compound': -0.4404}
+{'neg': 0.273, 'neu': 0.413, 'pos': 0.314, 'compound': 0.128}
+
+
+with stemming:
+{'neg': 0.0, 'neu': 0.196, 'pos': 0.804, 'compound': 0.6249}
+{'neg': 0.0, 'neu': 0.196, 'pos': 0.804, 'compound': 0.6249}
+{'neg': 0.75, 'neu': 0.25, 'pos': 0.0, 'compound': -0.4588}
+{'neg': 0.592, 'neu': 0.408, 'pos': 0.0, 'compound': -0.4404}
+{'neg': 0.327, 'neu': 0.297, 'pos': 0.376, 'compound': 0.128}
+"""
 
 
 

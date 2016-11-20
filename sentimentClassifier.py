@@ -19,7 +19,6 @@ stemmer = PorterStemmer()
 
 singles = [stemmer.stem(tok) for tok in tokens]
 newSent = ' '.join(map(str, tokens))
-print newSent
 sid = SentimentIntensityAnalyzer()
 ss = sid.polarity_scores(newSent)
 
