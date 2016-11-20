@@ -13,7 +13,9 @@ def getData(source):
 	generator = iterData.getData(source)
 	while True:
 		data = next(generator)
-		textClassification.feedData(data)
+		result =  textClassification.feedData(data)
+		print result
+		# break
 		
 
 

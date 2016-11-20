@@ -4,6 +4,7 @@ import random
 import re
 import csv
 import time
+from textblob import TextBlob
 import pandas as pd
 import numpy as np
 import requests
@@ -210,9 +211,10 @@ def filterResults(data, verdict):
 	
 
 def feedData(data):
+	print 'feedData'
 	demScore = 0
 	repScore = 0
-	threshold = 0.5
+	threshold = 0.3
 	verdict = []
 
 	for sentence , terms, topics , title, titleTerms in data:
@@ -223,20 +225,22 @@ def feedData(data):
 				topicClassification =  classifyTopic(sentence, topics.pop())
 				if topicClassification:
 					if topicClassification[0][0] == 2:
+						repScore += topicClassification[0][1]
 						tmpTup   = (sentence, topicClassification[0][1], 'Republican')
 						verdict.append(tmpTup)
+
 					elif topicClassification[0][0] == 1:
+						demScore += topicClassification[0][1]
 						tmpTup   = (sentence, topicClassification[0][1], 'Democratic')
 						verdict.append(tmpTup)
-
 			results = classifySubjectSentiment(sentence, terms[0][1])
 			if terms[0][1] == 'Democratic' and abs(results[1]['compound']) > threshold:
-				demScore += results[0]['compound']
-				tmpTup = (sentence, demScore, 'Democratic')
+				demScore += results[1]['compound']
+				tmpTup = (sentence, results[1]['compound'], 'Democratic')
 				verdict.append(tmpTup)
 			elif terms[0][1] == 'Republican' and abs(results[1]['compound']) > threshold:
-				repScore += results[0]['compound']
-				tmpTup = (sentence, repScore, 'Republican')
+				repScore += results[1]['compound']
+				tmpTup = (sentence, results[1]['compound'], 'Republican')
 				verdict.append(tmpTup)
 
 
@@ -248,17 +252,25 @@ def feedData(data):
 		elif titleClassification[2][0][1] == 'Republican' and abs(titleClassification[1]['compound']) > threshold:
 			tmpTup = (title, titleClassification[1]['compound'], 'Democratic')
 			verdict.append(tmpTup)
+
+	# print '***************'
+	# print repScore , demScore
+	# print '***************'
+
+
 	if repScore > demScore:
 		final = filterResults(verdict, 'Republican')
 		return final 
-	else:
+	if demScore > repScore:
 		final = filterResults(verdict, 'Democratic')
 		return final 
+	else:
+		return 'Not determined'
 
 
 
-# def wordFeats(words):
-# 	return dict([(word, True) for word in words])
+def wordFeats(words):
+	return dict([(word, True) for word in words])
 
 # def naiveBayes(words):
 # 	wordfeatures  = wordFeats(words)
@@ -289,7 +301,27 @@ def classifySubjectSentiment(sentence, subject):
 
 
 
+text = """
+President-elect Donald Trump on Saturday demanded an apology from the cast of "Hamilton" for appealing from the stage to Mike Pence to "uphold our American values" while the vice-president-elect was attending a performance of the Broadway hit.
+With President Obama on the ropes, Republicans have a huge opportunity right now but it looks like that opportunity may slip away
+ """
 
+
+print requests.post('http://text-processing.com/api/sentiment/', data = "text=" + text).json()
+blob = TextBlob(text)
+
+print classifySubjectSentiment(text, 'subject')
+for sentence in blob.sentences:
+    print(sentence.sentiment.polarity)
+
+
+
+# feats = wordFeats(sentence.split(' '))
+# with open('/Users/gregmiller/nltk_data/classifiers/movie_reviews_NaiveBayes.pickle', 'rb') as f:
+# 	classifer = pickle.load(f)
+# 	dist =  classifer.prob_classify(feats)
+# 	for label in dist.samples():
+# 		print("%s: %f" % (label, dist.prob(label)))
 
 
 # sentence = """Trump's remarks triggered a barrage of posts on Twitter, most of which were critical of the president-elect."""
@@ -297,7 +329,6 @@ def classifySubjectSentiment(sentence, subject):
 # print tokens
 # print naiveBayes(tokens)
 
-# print requests.post('http://text-processing.com/api/sentiment/', data = "text=Trump's remarks triggered a barrage of posts on Twitter, most of which were critical of the president-elect.").json()
 
 
 # testSentences = ["Dan, what about this tactic to go to the left of Hillary Clinton on her hawkishness, on the fact that she's trigger happy, the fact that you have a Republican nominee now saying that the Democrat is more likely to be engaged in countries around the world and we shouldn't be "]
