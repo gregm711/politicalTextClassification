@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*- 
 import os
 import random
+import re
 import csv
 import time
 import pandas as pd
@@ -21,7 +22,6 @@ from gensim.parsing.preprocessing import STOPWORDS
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk.classify.util
 from nltk.stem.porter import *
-
 """
 RESULTS:
 Count Vectorizer:
@@ -144,7 +144,7 @@ def topicClassifier(text, topic, sentencesTag):
 	classifierFile = open('topicsClassifierStemmedTokenized' + topic + sentencesTag +  '.pkl', 'rb')
 	vectorizerFile = open('topicsVectorizerStemmedTokenized' + topic + sentencesTag +'.pkl', 'rb')
 	if sentencesTag == 'sentences':
-		sentences = text[0].split('.')
+		sentences = re.split(r' *[\.\?!][\'"\)\]]* *', text[0])
 		finalText  = processArray(sentences)
 	elif sentencesTag != 'sentences':
 		finalText = processArray(text)
@@ -171,34 +171,75 @@ def classifyTopic(examples, topic):
 	if maxVal >= confidenceThreshold:
 		tmpTup = (noSentences[0], finalText[0], maxVal)
 		results.append(tmpTup)
-
 	return results
 
+
+
+
+
+def extractSubject(text):
+	token = nltk.word_tokenize(text)
+	return nltk.pos_tag(token)
+
+
+
+# sentence = 'I shot an elephant in my pajamas'
+# tokens = tokenize(sentence)
+# stemmer = PorterStemmer()
+# singles = [stemmer.stem(tok) for tok in tokens]
+# print extractSubject(sentence)
 
 def classifySubjectSentiment(sentence, subject):
 	tokens =  tokenize(sentence)
 	stemmer = PorterStemmer()
 	singles = [stemmer.stem(tok) for tok in tokens]
-	newSent = ' '.join(map(str, tokens))
+	newSent = ' '.join(map(str, singles))
 	sid = SentimentIntensityAnalyzer()
 	tokenizedPolarity = sid.polarity_scores(newSent)
 	rawPolarity = sid.polarity_scores(sentence)
-	return rawPolarity, tokenizedPolarity
-# def classifySubjectSentiment(sentence, subject):
-# 	sid = SentimentIntensityAnalyzer()
-# 	polarity = sid.polarity_scores(sentence)
-# 	print polarity
-# 	return polarity
+	
 
-# testSentences = ["the movie was great.", "the movie was great!", "the movie sucked", "trump hates hillary", "amazing hillary thinks trump is an idiot"]
-sentence = """
-The news followed signs on Thursday that the weight of the presidency is beginning to sink in for Trump, and that the President-elect may be shifting from the bomb-throwing tactics he employed during the campaign to a more nuanced approach."""
+	return rawPolarity, tokenizedPolarity , subject
 
-print classifySubjectSentiment(sentence, 'trump')
+# testSentences = ["BAIER: Mercedes, Hillary Clinton going after again and again and again temperament of Donald Trump"]
+# # sentence = """
+
+# # The news followed signs on Thursday that the weight of the presidency is beginning to sink in for Trump, and that the President-elect may be shifting from the bomb-throwing tactics he employed during the campaign to a more nuanced approach."""
+
+# # trump = ["Trump's remarks triggered a barrage of posts on Twitter, most of which were critical of the president-elect."]
+# for sentence in testSentences:
+# 	print classifySubjectSentiment(sentence, 'trump')
+
+
+
 
 
 
 """
+
+({'neg': 0.264, 'neu': 0.64, 'pos': 0.096, 'compound': -0.4754}, {'neg': 0.529, 'neu': 0.471, 'pos': 0.0, 'compound': -0.5423})
+({'neg': 0.0, 'neu': 0.423, 'pos': 0.577, 'compound': 0.6249}, {'neg': 0.0, 'neu': 0.196, 'pos': 0.804, 'compound': 0.6249})
+({'neg': 0.0, 'neu': 0.406, 'pos': 0.594, 'compound': 0.6588}, {'neg': 0.0, 'neu': 0.196, 'pos': 0.804, 'compound': 0.6249})
+({'neg': 0.6, 'neu': 0.4, 'pos': 0.0, 'compound': -0.4588}, {'neg': 0.744, 'neu': 0.256, 'pos': 0.0, 'compound': -0.4404})
+({'neg': 0.592, 'neu': 0.408, 'pos': 0.0, 'compound': -0.4404}, {'neg': 0.649, 'neu': 0.351, 'pos': 0.0, 'compound': -0.5719})
+({'neg': 0.273, 'neu': 0.413, 'pos': 0.314, 'compound': 0.128}, {'neg': 0.452, 'neu': 0.548, 'pos': 0.0, 'compound': -0.5106})
+
+
+
+({'neg': 0.264, 'neu': 0.64, 'pos': 0.096, 'compound': -0.4754}, {'neg': 0.366, 'neu': 0.488, 'pos': 0.146, 'compound': -0.4215})
+({'neg': 0.0, 'neu': 0.423, 'pos': 0.577, 'compound': 0.6249}, {'neg': 0.0, 'neu': 0.196, 'pos': 0.804, 'compound': 0.6249})
+({'neg': 0.0, 'neu': 0.406, 'pos': 0.594, 'compound': 0.6588}, {'neg': 0.0, 'neu': 0.196, 'pos': 0.804, 'compound': 0.6249})
+({'neg': 0.6, 'neu': 0.4, 'pos': 0.0, 'compound': -0.4588}, {'neg': 0.75, 'neu': 0.25, 'pos': 0.0, 'compound': -0.4588})
+({'neg': 0.592, 'neu': 0.408, 'pos': 0.0, 'compound': -0.4404}, {'neg': 0.592, 'neu': 0.408, 'pos': 0.0, 'compound': -0.4404})
+({'neg': 0.273, 'neu': 0.413, 'pos': 0.314, 'compound': 0.128}, {'neg': 0.327, 'neu': 0.297, 'pos': 0.376, 'compound': 0.128})
+
+
+
+
+
+
+
+
 Not tokenizing or stemming
 {'neg': 0.0, 'neu': 0.423, 'pos': 0.577, 'compound': 0.6249}
 {'neg': 0.0, 'neu': 0.406, 'pos': 0.594, 'compound': 0.6588}
